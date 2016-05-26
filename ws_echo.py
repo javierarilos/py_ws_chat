@@ -2,6 +2,8 @@
 
 import asyncio
 import websockets
+import uvloop
+
 import datetime
 import random
 
@@ -30,5 +32,6 @@ async def hello(websocket, path):
 
 start_server = websockets.serve(hello, 'localhost', 8765)
 
+asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
 asyncio.get_event_loop().run_until_complete(start_server)
 asyncio.get_event_loop().run_forever()
