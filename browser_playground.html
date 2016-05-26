@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+  <title>pywebschat</title>
+  <script>
+    function show(contents) {
+        document.getElementById("demo").innerHTML += contents+'<br/>';
+    }
+
+    function show_server_time(contents) {
+        document.getElementById("server_time").innerHTML = contents+'<br/>';
+    }
+
+    function init_ws(name) {
+      name = name || '';
+      var ws = new WebSocket("ws://localhost:8765/"+name);
+      ws.onerror = function(e){show('>>>>'+name+' ws ERROR'+e)};
+      ws.onclose = function(e){show('>>>>'+name+' ws CLOSED'+e)};
+      return ws;
+    }
+
+    var echo_ws = init_ws('echo');
+    echo_ws.onmessage = function(a){show('<< ECHO ws, received: '+a.data)};
+
+    var time_ws = init_ws('time');
+    var received_time_msgs = 0;
+    time_ws.onmessage = function(a){
+      server_time = a.data;
+      console.log('TIME ws, received: ', server_time);
+      show_server_time(server_time);
+      received_time_msgs += 1;
+      if (received_time_msgs == 10) {
+        var msg = '====== closing time_ws.';
+        console.log(msg);
+        show_server_time(msg);
+        time_ws.close();
+      }
+    }
+
+    function send(msg) {
+      show('>> Sending: "'+msg+'" to echo_ws.');
+      echo_ws.send(msg);
+    }
+
+  </script>
+
+  <body>
+    <h1>pywebschat</h1>
+    <p id="server_time">Time from server should be here.</p>
+    <button type="button" onclick="send('Hello from JavaScript!')">Try it</button>
+    <p id="demo">Static content.<br/></p>
+  </body>
+</html>
